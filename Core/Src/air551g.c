@@ -33,7 +33,7 @@ volatile uint8_t bcc_Checksum;
  */
 void air551g_init(){
 	HAL_Delay(5000);
-	HAL_UART_Transmit(AIR551G_uart,Init_WarmStartup,sizeof(Init_WarmStartup),0xFFFF);
+	HAL_UART_Transmit(AIR551G_uart,Init_ColdStartup,sizeof(Init_ColdStartup),0xFFFF);
 	HAL_Delay(500);
 	HAL_UART_Transmit(AIR551G_uart,Init_Use_L1andL5,sizeof(Init_Use_L1andL5),0xFFFF);
 	HAL_Delay(500);
@@ -166,6 +166,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=2;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -177,6 +178,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 					if(gnssdata.day_utc==29){
 						gnssdata.day_cst=1;
 						gnssdata.month_cst=3;
+						gnssdata.year_cst=gnssdata.year_utc;
 					}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;				
@@ -184,6 +186,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==28){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=3;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -195,6 +198,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=4;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -205,8 +209,9 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==30){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=5;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
-						gnssdata.year_cst=gnssdata.year_utc;
+						gnssdata.year_cst=gnssdata.year_utc;	
 						gnssdata.month_cst=gnssdata.month_utc;					
 				}
 				break;
@@ -215,6 +220,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=6;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -225,6 +231,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==30){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=7;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -235,6 +242,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=8;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -245,6 +253,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=9;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -255,6 +264,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==30){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=10;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -265,6 +275,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==31){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=11;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					
@@ -275,6 +286,7 @@ GNSS_info gnss_getTimeDate(GNSS_info gnssdata){
 				if(gnssdata.day_utc==30){
 					gnssdata.day_cst=1;
 					gnssdata.month_cst=12;
+					gnssdata.year_cst=gnssdata.year_utc;
 				}else{
 						gnssdata.year_cst=gnssdata.year_utc;
 						gnssdata.month_cst=gnssdata.month_utc;					

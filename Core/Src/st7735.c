@@ -13,14 +13,14 @@ static const uint8_t
     ST7735_SLPOUT ,   DELAY,  //  2: Out of sleep mode, 0 args, w/delay
       255,                    //     500 ms delay
     ST7735_FRMCTR1, 3      ,  //  3: Frame rate ctrl - normal mode, 3 args:
-      0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
+      0x02, 0x35, 0x36,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
     ST7735_FRMCTR2, 3      ,  //  4: Frame rate control - idle mode, 3 args:
-      0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
+      0x02, 0x35, 0x36,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
     ST7735_FRMCTR3, 6      ,  //  5: Frame rate ctrl - partial mode, 6 args:
-      0x01, 0x2C, 0x2D,       //     Dot inversion mode
-      0x01, 0x2C, 0x2D,       //     Line inversion mode
+      0x02, 0x35, 0x36,       //     Dot inversion mode 0x01, 0x2C, 0x2D,
+      0x02, 0x35, 0x36,       //     Line inversion mode
     ST7735_INVCTR , 1      ,  //  6: Display inversion ctrl, 1 arg, no delay:
-      0x07,                   //     No inversion
+      0x03,                   //     No inversion
     ST7735_PWCTR1 , 3      ,  //  7: Power control, 3 args, no delay:
       0xA2,
       0x02,                   //     -4.6V
@@ -28,13 +28,13 @@ static const uint8_t
     ST7735_PWCTR2 , 1      ,  //  8: Power control, 1 arg, no delay:
       0xC5,                   //     VGH25 = 2.4C VGSEL = -10 VGH = 3 * AVDD
     ST7735_PWCTR3 , 2      ,  //  9: Power control, 2 args, no delay:
-      0x0A,                   //     Opamp current small
+      0x0D,                   //     Opamp current small
       0x00,                   //     Boost frequency
     ST7735_PWCTR4 , 2      ,  // 10: Power control, 2 args, no delay:
-      0x8A,                   //     BCLK/2, Opamp current small & Medium low
+      0x8D,                   //     BCLK/2, Opamp current small & Medium low
       0x2A,  
     ST7735_PWCTR5 , 2      ,  // 11: Power control, 2 args, no delay:
-      0x8A, 0xEE,
+      0x8D, 0xEE,
     ST7735_VMCTR1 , 1      ,  // 12: Power control, 1 arg, no delay:
       0x0E,
     ST7735_INVOFF , 0      ,  // 13: Don't invert display, no args, no delay
@@ -56,28 +56,28 @@ static const uint8_t
 
 #ifdef ST7735_IS_160X80
   init_cmds2[] = {            // Init for 7735S, part 2 (160x80 display)
-    3,                        //  3 commands in list:
+    2,                        //  3 commands in list:
     ST7735_CASET  , 4      ,  //  1: Column addr set, 4 args, no delay:
-      0x00, 0x00,             //     XSTART = 0
-      0x00, 0x4F,             //     XEND = 79
+      0x00, 0x18,             //     XSTART = 0
+      0x00, 0x67,             //     XEND = 79
     ST7735_RASET  , 4      ,  //  2: Row addr set, 4 args, no delay:
       0x00, 0x00,             //     XSTART = 0
       0x00, 0x9F ,            //     XEND = 159
-    ST7735_INVON, 0 },        //  3: Invert colors
+    },        //  3: Invert colors
 #endif
 
   init_cmds3[] = {            // Init for 7735R, part 3 (red or green tab)
     4,                        //  4 commands in list:
     ST7735_GMCTRP1, 16      , //  1: Magical unicorn dust, 16 args, no delay:
-      0x02, 0x1c, 0x07, 0x12,
-      0x37, 0x32, 0x29, 0x2d,
-      0x29, 0x25, 0x2B, 0x39,
-      0x00, 0x01, 0x03, 0x10,
+      0x12, 0x1C, 0x10, 0x18,
+      0x33, 0x2C, 0x25, 0x28,
+      0x28, 0x27, 0x2F, 0x3C,
+      0x00, 0x03, 0x03, 0x10,
     ST7735_GMCTRN1, 16      , //  2: Sparkles and rainbows, 16 args, no delay:
-      0x03, 0x1d, 0x07, 0x06,
-      0x2E, 0x2C, 0x29, 0x2D,
-      0x2E, 0x2E, 0x37, 0x3F,
-      0x00, 0x00, 0x02, 0x10,
+      0x12, 0x1C, 0x10, 0x18,
+      0x2D, 0x28, 0x23, 0x28,
+      0x28, 0x26, 0x2F, 0x3B,
+      0x00, 0x03, 0x03, 0x10,
     ST7735_NORON  ,    DELAY, //  3: Normal display on, no args, w/delay
       10,                     //     10 ms delay
     ST7735_DISPON ,    DELAY, //  4: Main screen turn on, no args w/delay
@@ -149,10 +149,10 @@ static void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t 
     ST7735_WriteCommand(ST7735_RAMWR);
 }
 
-void ST7735_Init() {
+void ST7735_Init() { 
     ST7735_Select();
     ST7735_Reset();
-    ST7735_ExecuteCommandList(init_cmds1);
+		ST7735_ExecuteCommandList(init_cmds1);
     ST7735_ExecuteCommandList(init_cmds2);
     ST7735_ExecuteCommandList(init_cmds3);
     ST7735_Unselect();
@@ -251,6 +251,11 @@ void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16
     }
 
     ST7735_Unselect();
+}
+
+void ST7735_FillEmptyRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color){
+	ST7735_FillRectangle(x,y,w,h,color);
+	ST7735_FillRectangle(x+1,y+1,w-2,h-2,ST7735_BLACK);
 }
 
 void ST7735_FillScreen(uint16_t color) {

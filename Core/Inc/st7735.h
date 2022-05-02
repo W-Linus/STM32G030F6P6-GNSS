@@ -37,13 +37,23 @@ extern SPI_HandleTypeDef ST7735_SPI_PORT;
 */
 
 // AliExpress/eBay 1.8" display, rotate right
-
+/*
 #define ST7735_IS_160X128 1
 #define ST7735_WIDTH  160
 #define ST7735_HEIGHT 128
 #define ST7735_XSTART 1
 #define ST7735_YSTART 2
 #define ST7735_ROTATION (ST7735_MADCTL_MY | ST7735_MADCTL_MV)
+*/
+
+//AliExpress/eBay 0.96" display, rotate right
+
+#define ST7735_IS_160X80 1
+#define ST7735_WIDTH  160
+#define ST7735_HEIGHT 80
+#define ST7735_XSTART 0
+#define ST7735_YSTART 24
+#define ST7735_ROTATION (ST7735_MADCTL_MX | ST7735_MADCTL_MV | ST7735_MADCTL_BGR)
 
 
 // AliExpress/eBay 1.8" display, rotate left
@@ -162,9 +172,8 @@ extern SPI_HandleTypeDef ST7735_SPI_PORT;
 #define ST7735_YSTART 26
 #define ST7735_WIDTH  160
 #define ST7735_HEIGHT 80
-#define ST7735_ROTATION (ST7735_MADCTL_MX | ST7735_MADCTL_MV | ST7735_MADCTL_BGR)
+#define ST7735_ROTATION (ST7735_MADCTL_MX | ST7735_MADCTL_MV | ST7735_MADCTL_RGB)
 */
-
 // mini 160x80, rotate right 
 /*
 #define ST7735_IS_160X80 1
@@ -222,6 +231,9 @@ extern SPI_HandleTypeDef ST7735_SPI_PORT;
 
 #define ST7735_GMCTRP1 0xE0
 #define ST7735_GMCTRN1 0xE1
+#define ST7735_INTREG2 0xEF
+
+#define ST7735_INTREG1 0xFE
 
 // Color definitions
 #define	ST7735_BLACK   0x0000
@@ -241,6 +253,7 @@ void ST7735_Init(void);
 void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color);
 void ST7735_WriteString(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor);
 void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+void ST7735_FillEmptyRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 void ST7735_FillScreen(uint16_t color);
 void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data);
 void ST7735_InvertColors(bool invert);

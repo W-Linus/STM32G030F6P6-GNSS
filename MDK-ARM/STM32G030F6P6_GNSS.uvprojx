@@ -749,6 +749,41 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>NEW_LCD</GroupName>
+          <Files>
+            <File>
+              <FileName>Lcd_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\Lcd_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Font.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\Font.h</FilePath>
+            </File>
+            <File>
+              <FileName>Lcd_Driver.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\Lcd_Driver.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Display</GroupName>
+          <Files>
+            <File>
+              <FileName>disp.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\Inc\disp.h</FilePath>
+            </File>
+            <File>
+              <FileName>disp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\disp.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>

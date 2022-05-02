@@ -23,10 +23,10 @@ typedef struct {
 	/*Data validity*/
 	uint8_t data_validity;
 	/*Position*/
-	uint8_t lat_dir; 	//N S 
+	char lat_dir; 	//N S 
 	float latitude_ddmm;		//ddmm.mmmm
 	float latitude; //dd.dddddd
-	uint8_t long_dir;	//E W
+	char long_dir;	//E W
 	float longitude_dddmm;	//dddmm.mmmm
 	float longitude; //ddd.dddddd
 	uint8_t maidenhead[7];

@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include <air551g.h>
 #include <st7735.h>
+#include <Lcd_Driver.h>
+#include <disp.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,19 +110,22 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+	Lcd_Init();
 	
 	ST7735_BackLight_OFF();
-	ST7735_Init();
 	ST7735_BackLight_ON();
-	ST7735_FillScreen(ST7735_BLACK);
-	ST7735_WriteString(0,0,"STM32G030F6P6 GNSS System",Font_11x18,ST7735_WHITE,ST7735_BLACK);
+	
+	Lcd_Clear(BLACK);
+	
+	ST7735_WriteString(0,0,"STM32G030F6P6 GNSS System by BH8PHG W_Linus",Font_11x18,ST7735_WHITE,ST7735_BLACK);
 	HAL_Delay(2000);
 	ST7735_FillScreen(ST7735_BLACK);
+	
+	disp_Frame();
+
+	/*ST7735_FillScreen(ST7735_BLACK);
 	ST7735_FillRectangle(0,0,10,10,ST7735_RED);
 	ST7735_WriteString(12,0,(char*)starthint,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	
-
-	
 	ST7735_WriteString(0,12,"lat:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
 	ST7735_WriteString(30,12,(char*)gnss.lat_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
 	ST7735_WriteString(0,22,"long:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
@@ -133,6 +138,7 @@ int main(void)
 	ST7735_WriteString(35,52,(char*)gnss.maidenhead,Font_7x10,ST7735_WHITE,ST7735_BLACK);
 	ST7735_WriteString(0,62,"Speed:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
 	ST7735_WriteString(40,62,(char*)gnss.speed_kph_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
+	*/
 	
 	air551g_init();
 
@@ -142,30 +148,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
 		if(refresh_flag==1){
-		ST7735_WriteString(35,42,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
+		ST7735_WriteString(13,67,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
 		if(gnss.data_validity=='A'){
-			ST7735_FillRectangle(0,0,10,10,ST7735_GREEN);
-			ST7735_WriteString(12,0,"Positioning success",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(30,12,(char*)gnss.lat_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,22,(char*)gnss.long_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);	
-			ST7735_WriteString(35,32,(char*)gnss.date_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,42,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,52,(char*)gnss.maidenhead,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(40,62,(char*)gnss.speed_kph_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);	
+			disp_ValidGNSSInfo(gnss);
 		}
 		
 		if((gnss.data_validity!='A')&&(gnss.latitude!=0)){
-			ST7735_FillRectangle(0,0,10,10,ST7735_YELLOW);  
-			ST7735_WriteString(12,0,"Invalid GNSS data     ",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(30,12,(char*)gnss.lat_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,22,(char*)gnss.long_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);	
-			ST7735_WriteString(35,32,(char*)gnss.date_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,42,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(35,52,(char*)gnss.maidenhead,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-			ST7735_WriteString(40,62,(char*)gnss.speed_kph_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);	
+			disp_InvalidGNSSInfo(gnss);
 		}
 		refresh_flag=0;
+		
 	}
     /* USER CODE END WHILE */
 
@@ -300,7 +294,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
