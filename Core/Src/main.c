@@ -21,9 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <air551g.h>
+#include <air530z.h>
 #include <st7735.h>
-#include <Lcd_Driver.h>
 #include <disp.h>
 /* USER CODE END Includes */
 
@@ -42,21 +41,51 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
- ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
+IWDG_HandleTypeDef hiwdg;
+
 SPI_HandleTypeDef hspi1;
+
+TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 
 /* USER CODE BEGIN PV */
-uint32_t counter;
+uint8_t softVer[]="1.6";
+
+uint8_t sysVolt[]="0.00";
+uint8_t batVolt[]="0.00";
+uint8_t sysTemp[]="11.10";
+
+
+volatile uint32_t counter;
+
 GNSS_info gnss;
-uint8_t starthint[]="Waiting GNSS Signal";
+GNSS_info gnss_sim;
+
+static uint8_t startHint[]="Waiting GNSS Signal";
 
 volatile uint8_t refresh_flag=0;
+
+uint32_t ADC_Data[4];
+
+volatile uint16_t Vrefint;
+volatile float Vdd;
+volatile float Vbat;
+
+volatile uint16_t TS_CAL1;
+volatile float Temperature;
+
+volatile uint8_t KeyL_PA6_Flag=0;
+volatile uint32_t KeyR_PB0_Flag=1;
+
+volatile uint8_t KeyL_PA6_Flag_Last=0;
+
+extern uint8_t rptBuffer[120];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,6 +96,8 @@ static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_IWDG_Init(void);
+static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,38 +140,49 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_IWDG_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-	Lcd_Init();
+	HAL_ADCEx_Calibration_Start(&hadc1);
+	
+	Vrefint=*(uint16_t*)(0x1FFF75AA);
+	TS_CAL1=*(uint16_t*)(0x1FFF75A8);
+	
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_14,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_15,GPIO_PIN_RESET);
+	
+	HAL_Delay(500);
+	
+	HAL_IWDG_Refresh(&hiwdg);
+	ST7735_BackLight_OFF();
+	ST7735_Init();
+
+	ST7735_FillScreen(ST7735_BLACK);
+	ST7735_WriteString(15,7,"GNSS Locater",Font_11x18,ST7735_WHITE,ST7735_BLACK);
+	ST7735_FillRectangle(0,28,160,1,ST7735_GREEN);
+	ST7735_WriteString(3,35,"Location Based Service",Font_7x10,ST7735_CYAN,ST7735_BLACK);
+	ST7735_WriteString(15,49,"Beidou+GPS+Glonass",Font_7x10,ST7735_WHITE,ST7735_BLACK);
+	ST7735_WriteString(0,67,"BH8PHG 2022",Font_7x10,ST7735_GREEN,ST7735_BLACK);
+	ST7735_WriteString(110,67,"Ver:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
+	ST7735_WriteString(138,67,(char*)softVer,Font_7x10,ST7735_WHITE,ST7735_BLACK);
+	
+	ST7735_BackLight_ON();
+	HAL_IWDG_Refresh(&hiwdg);
+	
+	HAL_Delay(4000);
+	
+	air530z_init();
 	
 	ST7735_BackLight_OFF();
-	ST7735_BackLight_ON();
-	
-	Lcd_Clear(BLACK);
-	
-	ST7735_WriteString(0,0,"STM32G030F6P6 GNSS System by BH8PHG W_Linus",Font_11x18,ST7735_WHITE,ST7735_BLACK);
-	HAL_Delay(2000);
 	ST7735_FillScreen(ST7735_BLACK);
-	
 	disp_Frame();
-
-	/*ST7735_FillScreen(ST7735_BLACK);
-	ST7735_FillRectangle(0,0,10,10,ST7735_RED);
-	ST7735_WriteString(12,0,(char*)starthint,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(0,12,"lat:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(30,12,(char*)gnss.lat_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(0,22,"long:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(35,22,(char*)gnss.long_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);	
-	ST7735_WriteString(0,32,"Date:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(35,32,(char*)gnss.date_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(0,42,"CST:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(35,42,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(0,52,"Grid:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(35,52,(char*)gnss.maidenhead,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(0,62,"Speed:",Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	ST7735_WriteString(40,62,(char*)gnss.speed_kph_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-	*/
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_14,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_15,GPIO_PIN_SET);
+	ST7735_BackLight_ON();
+	HAL_IWDG_Refresh(&hiwdg);
 	
-	air551g_init();
+	HAL_ADC_Start_DMA(&hadc1,ADC_Data,3);
+	HAL_TIM_Base_Start_IT(&htim14);
 
   /* USER CODE END 2 */
 
@@ -148,19 +190,45 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		
 		if(refresh_flag==1){
-		ST7735_WriteString(13,67,(char*)gnss.time_cst_str,Font_7x10,ST7735_WHITE,ST7735_BLACK);
-		if(gnss.data_validity=='A'){
-			disp_ValidGNSSInfo(gnss);
-		}
-		
-		if((gnss.data_validity!='A')&&(gnss.latitude!=0)){
-			disp_InvalidGNSSInfo(gnss);
-		}
-		refresh_flag=0;
+			
+			show_basicStatus(gnss,Vbat,Temperature);
+			
+			if(KeyL_PA6_Flag!=KeyL_PA6_Flag_Last){
+				ST7735_BackLight_OFF();
+				ST7735_FillScreen(ST7735_BLACK);
+				KeyL_PA6_Flag_Last=KeyL_PA6_Flag;
+				if(KeyL_PA6_Flag==0){
+					disp_Frame();
+				}
+				ST7735_BackLight_ON();
+			}
+			
+			switch(KeyL_PA6_Flag){
+				case 0:
+					show_detailGNSS(gnss);
+				break;
+				case 1:
+					show_bigTime(gnss);
+				break;
+				case 2:
+					show_speed(gnss);
+				break;
+				case 3:
+					show_sysInfo(sysTemp,sysVolt,batVolt,softVer);
+				break;
+				case 4:
+					show_originalData(rptBuffer,gnss);
+				break;
+			}
+			
+		refresh_flag=0; 
 		
 	}
+		Vdd=3.0*((Vrefint*1.0)/(ADC_Data[2]*1.0));
+		Vbat=((ADC_Data[0]*2.0)/4095.0)*Vdd;
+	
+		Temperature=(30.0f)/(TS_CAL1)*((float)ADC_Data[1]-TS_CAL1)+30.0f;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -184,10 +252,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
@@ -234,20 +303,21 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.NbrOfConversion = 3;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_1CYCLE_5;
+  hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_39CYCLES_5;
   hadc1.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
   hadc1.Init.OversamplingMode = DISABLE;
   hadc1.Init.TriggerFrequencyMode = ADC_TRIGGER_FREQ_HIGH;
@@ -265,9 +335,56 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
+  hiwdg.Init.Window = 4095;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -308,6 +425,37 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief TIM14 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM14_Init(void)
+{
+
+  /* USER CODE BEGIN TIM14_Init 0 */
+
+  /* USER CODE END TIM14_Init 0 */
+
+  /* USER CODE BEGIN TIM14_Init 1 */
+
+  /* USER CODE END TIM14_Init 1 */
+  htim14.Instance = TIM14;
+  htim14.Init.Prescaler = 6400-1;
+  htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim14.Init.Period = 10000-1;
+  htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM14_Init 2 */
+
+  /* USER CODE END TIM14_Init 2 */
 
 }
 
@@ -375,7 +523,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -429,22 +577,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LCD_RES_Pin|LCD_DC_Pin|GPIO_PIN_6|LCD_CS_Pin
-                          |LCD_BL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LCD_RES_Pin|LCD_DC_Pin|LCD_CS_Pin|LCD_BL_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pins : PC14 PC15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LCD_RES_Pin LCD_DC_Pin LCD_CS_Pin */
@@ -454,21 +596,29 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA6 LCD_BL_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|LCD_BL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  /*Configure GPIO pin : PA6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : PB0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LCD_BL_Pin */
+  GPIO_InitStruct.Pin = LCD_BL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(LCD_BL_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+
   HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
@@ -476,11 +626,51 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+		HAL_IWDG_Refresh(&hiwdg);
 		counter++;
-		air551g_rpt();
-		gnss=air551g_dataGet();
+		air530z_rpt();
+		gnss=air530z_dataGet();
+	
+		if(Temperature>=10.0||Temperature<0.0){
+			sprintf((char*)sysTemp,"%.1lf",(double)Temperature);
+		}
+		if(Temperature>=0.0&&Temperature<10.0){
+			sprintf((char*)sysTemp,"%.2lf",(double)Temperature);
+		}
+		
+		sprintf((char*)sysVolt,"%.2lf",(double)Vdd);
+		sprintf((char*)batVolt,"%.2lf",(double)Vbat);
+		
 		refresh_flag=1;
 	//HAL_UART_Receive_DMA(AIR551G_uart,rxBuffer,200); //Reopen UART
+}
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin==GPIO_PIN_0){
+		if(KeyL_PA6_Flag>=4){
+			KeyL_PA6_Flag=0;
+		}else{
+			KeyL_PA6_Flag+=1;
+		}
+	}
+	
+	if(GPIO_Pin==GPIO_PIN_6){
+		KeyR_PB0_Flag+=1;
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* Prevent unused argument(s) compilation warning */
+  if((htim==&htim14)&&(Vbat<3.72)){
+      HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_14);
+			UNUSED(htim);
+	}else{
+		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_14,GPIO_PIN_SET);
+	}
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
+   */
 }
 /* USER CODE END 4 */
 

@@ -1,14 +1,14 @@
 /*
- *@filename: air551g.h
- *@Description: Air551G GNSS Module operation file
+ *@filename: air530z.h
+ *@Description: air530z GNSS Module operation file
  *@version: 1.0
  *@Author: BH8PHG W_Linus
  *@Date: 2022/04/25
  */
-#ifndef __AIR551G_H_
-#define __AIR551G_H_
+#ifndef __air530z_H_
+#define __air530z_H_
 
-#define AIR551G_uart &huart2
+#define air530z_uart &huart2
 #define PC_uart 		 &huart1
 
 #include <stm32g0xx_hal.h>
@@ -62,11 +62,11 @@ typedef struct {
 } GNSS_info;
 
 
-void air551g_init(void);
-void air551g_prepareRptBuffer(void);
-void air551g_rpt(void);
+void air530z_init(void);
+void air530z_prepareRptBuffer(void);
+void air530z_rpt(void);
 
-GNSS_info air551g_dataGet(void);
+GNSS_info air530z_dataGet(void);
 GNSS_info gnss_getTimeDate(GNSS_info gnssdata);
 GNSS_info gnss_getLocation(GNSS_info gnssdata);
 GNSS_info gnss_getSpeed(GNSS_info gnssdata);

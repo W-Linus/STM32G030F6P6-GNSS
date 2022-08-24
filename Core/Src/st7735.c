@@ -37,7 +37,7 @@ static const uint8_t
       0x8D, 0xEE,
     ST7735_VMCTR1 , 1      ,  // 12: Power control, 1 arg, no delay:
       0x0E,
-    ST7735_INVOFF , 0      ,  // 13: Don't invert display, no args, no delay
+    ST7735_INVON , 0      ,  // 13: Don't invert display, no args, no delay
     ST7735_MADCTL , 1      ,  // 14: Memory access control (directions), 1 arg:
       ST7735_ROTATION,        //     row addr/col addr, bottom to top refresh
     ST7735_COLMOD , 1      ,  // 15: set color mode, 1 arg, no delay:
@@ -280,11 +280,11 @@ void ST7735_InvertColors(bool invert) {
 }
 
 void ST7735_BackLight_ON(void){
-	HAL_GPIO_WritePin(ST7735_BackLight_GPIO_Port,ST7735_BackLight_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(ST7735_BackLight_GPIO_Port,ST7735_BackLight_Pin,GPIO_PIN_RESET);
 }
 
 
 void ST7735_BackLight_OFF(void){
-	HAL_GPIO_WritePin(ST7735_BackLight_GPIO_Port,ST7735_BackLight_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(ST7735_BackLight_GPIO_Port,ST7735_BackLight_Pin,GPIO_PIN_SET);
 }
 

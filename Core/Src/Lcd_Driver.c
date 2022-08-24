@@ -1,7 +1,3 @@
-
-
-
-#include "stm32g0xx_hal.h"
 #include "Lcd_Driver.h"
 
 //“∫æßIO≥ı ºªØ≈‰÷√
@@ -53,6 +49,7 @@ void Lcd_Reset(void)
 //LCD Init For 1.44Inch LCD Panel with ST7735R.
 void Lcd_Init(void)
 {	
+	LCD_BL_SET;
 	Lcd_Reset(); //Reset before LCD Init.
 	 Lcd_WriteIndex(0xfe);     //Inter register enable 1
     Lcd_WriteIndex(0xfe);     
@@ -237,7 +234,7 @@ Lcd_WriteData(0xA8);//
 
 Lcd_WriteIndex(0x29); 
 */
-	 LCD_BL_SET;
+	 LCD_BL_CLR;
 }
 
 
